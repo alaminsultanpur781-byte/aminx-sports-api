@@ -1,39 +1,33 @@
-# AminX Sports API
+# AminX Sports API (Render PostgreSQL)
 
-Node.js + Express backend for a sports app with match fixtures, manually/provider-updated scores, channel metadata, authorized streaming links, news, user accounts and admin CRUD.
+Node.js + Express API using a managed Render PostgreSQL database.
 
-## Requirements
-- Node.js 18+
-- Supabase project
-- GitHub repository
-- Render Web Service
+## 1. Create the database
+1. In the Render Dashboard choose **New + → PostgreSQL**.
+2. Name it `aminx-sports-db`. Choose a region that you will also use for the Web Service.
+3. Create the database and wait until its status is **Available**.
+4. Open its **Connect** tab and copy the **External Database URL** for the one-time schema setup. Keep it private.
 
-## Local setup
-1. Run `npm install`.
-2. Copy `.env.example` to `.env` and fill in the values.
-3. In Supabase SQL Editor, run `database/schema.sql`.
-4. Optionally run `database/seed.sql` for sample data.
-5. Run `npm start`.
-6. Test `GET /api/health` and `GET /api/docs`.
+## 2. Deploy the API
+The API automatically creates the required tables from `database/schema.sql` when it starts, so you do not need to paste SQL manually.
 
-## Render
-- Create a **Web Service** from your GitHub repository.
-- Build command: `npm install`
-- Start command: `npm start`
-- Add every required variable from `.env.example` in Render Environment.
-- Never commit `.env` or expose the Supabase service-role key in an Android app.
+1. Push this project to GitHub.
+2. In Render choose **New + → Web Service** and connect the repository.
+3. Runtime: Node. Build command: `npm install`. Start command: `npm start`.
+4. Choose the same region as the database.
+5. Add environment variables:
+   - `DATABASE_URL`: use the database's **Internal Database URL** from the Connect tab.
+   - `JWT_SECRET`: a long random secret.
+   - `ADMIN_EMAIL`: your admin email.
+   - `ADMIN_PASSWORD_HASH`: bcrypt hash of your admin password.
+   - `NODE_ENV`: `production`.
+6. Deploy.
 
-## Main endpoints
-- `GET /api/health`
-- `GET /api/docs`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/admin-login`
-- `GET /api/matches`, `GET /api/live`, `GET /api/matches/:id`
-- `GET /api/channels`, `GET /api/news`, `GET /api/teams`, `GET /api/players`
-- Admin CRUD: `/api/admin/{matches|channels|news|teams|players|settings}`
-
-For admin endpoints, send `Authorization: Bearer <admin-token>`.
+## 4. Test
+Open `https://YOUR-SERVICE.onrender.com/api/health`. Expected response includes `"api":"online"` and `"database":"connected"`. API docs: `/api/docs`.
 
 ## Important
-This backend does not create sports data or broadcast video by itself. Connect a licensed sports-data provider for automatic scores, or manage scores from the admin panel. Only add video streams you own or are authorized to distribute. A REST API stores and serves stream metadata; actual video delivery requires a lawful origin/CDN/provider.
+- Never commit `.env`, database URLs, passwords, JWT secrets, or provider keys.
+- Use the Internal Database URL from a Render service in the same region. External URLs require TLS.
+- Live scores need a licensed sports-data provider or admin updates. Live streams must be streams you own or are licensed to distribute. This API does not provide TV channel feeds.
+- Configure a strong admin password hash before using `/api/auth/admin-login`.

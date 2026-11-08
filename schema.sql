@@ -1,6 +1,4 @@
--- Run this script in the Supabase SQL Editor.
-create extension if not exists pgcrypto;
-
+-- Run this script in the Render PostgreSQL database using a PostgreSQL SQL client.
 create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -82,5 +80,4 @@ create index if not exists matches_start_time_idx on public.matches(start_time);
 create index if not exists channels_status_idx on public.channels(status);
 create index if not exists news_status_created_idx on public.news(status, created_at desc);
 
--- The backend uses the Supabase service-role key on the server.
--- Never put that key in a browser or Android application.
+-- This schema is for the AminX Sports API on Render PostgreSQL.

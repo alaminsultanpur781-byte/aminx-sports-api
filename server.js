@@ -28,12 +28,11 @@ app.get("/", (req, res) => res.json({
 
 app.get("/api/health", async (req, res, next) => {
   try {
-    const { supabase } = require("./services/db");
-    if (!supabase) return res.json({ success: true, api: "online", database: "not_configured" });
-    const { error } = await supabase.from("matches").select("id").limit(1);
-    res.status(error ? 503 : 200).json({
-      success: !error, api: "online",
-      database: error ? "error" : "connected",
+    const { checkDb } = require("./services/db");
+    const connected = await checkDb();
+    res.status(connected ? 200 : 503).json({
+      success: connected, api: "online",
+      database: connected ? "connected" : "not_configured",
       timestamp: new Date().toISOString()
     });
   } catch (err) { next(err); }
@@ -62,4 +61,10 @@ app.use((req, res) => res.status(404).json({
 app.use(errorHandler);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`AminX Sports API running on port ${port}`));
+const { initializeDatabase } = require("./services/db");
+initializeDatabase()
+  .then(() => app.listen(port, () => console.log(`AminX Sports API running on port ${port}`)))
+  .catch((error) => {
+    console.error("Database initialization failed:", error.message);
+    process.exit(1);
+  });
