@@ -1,6 +1,23 @@
+
 const router = require("express").Router();
 const { requireDb } = require("../services/db");
+const { fetchProviderScores } = require("../services/score.service");
 
+// SportScore provider API
+router.get("/scores/provider", async (req, res, next) => {
+  try {
+    const sport = String(req.query.sport || "cricket").toLowerCase();
+    const limit = req.query.limit || 20;
+
+    const result = await fetchProviderScores(sport, limit);
+
+    res.status(result.success ? 200 : 502).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// All matches
 router.get("/matches", async (req, res, next) => {
   try {
     const db = requireDb();
@@ -31,6 +48,7 @@ router.get("/matches", async (req, res, next) => {
   }
 });
 
+// Live matches from database
 router.get("/live", async (req, res, next) => {
   try {
     const db = requireDb();
@@ -51,6 +69,7 @@ router.get("/live", async (req, res, next) => {
   }
 });
 
+// Single match details
 router.get("/matches/:id", async (req, res, next) => {
   try {
     const db = requireDb();
